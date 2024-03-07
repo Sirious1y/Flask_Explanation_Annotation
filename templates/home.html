@@ -1,0 +1,28 @@
+{% extends 'base.html' %} {% block head %}
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.js"></script>
+
+<script src="../static/js/svg-pen-sketch.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.1/math.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<title>{{ title }} ({{ task_title }})</title>
+{% endblock %} {% block body %}
+
+{% for message in get_flashed_messages() %}
+<h2>{{ message }}</h2>
+{% endfor %}
+
+
+<div class="text-container" id="user_input">
+    <form action="index" method="post">
+        <label for="model_name">File name of the saved model</label>
+        <br>
+        <input type="text" name="model_name" value="">
+        <br>
+        <input type="submit" value="Load">
+    </form>
+</div>
+
+{% endblock %}

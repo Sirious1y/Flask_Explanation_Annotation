@@ -1,0 +1,9 @@
+pandas==1.2.0
+opencv-python==4.9.0.80
+numpy==1.19.4
+flask==3.0.1
+pytz==2023.3.post1
+Pillow==8.4.0
+wtforms==3.1.2
+torch==2.2.1+cu121
+torchvision==0.17.1+cu121
