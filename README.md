@@ -21,13 +21,13 @@ $ venv_flask_cnn\Scripts\activate.bat
 $ pip install -r requirements.txt
 ```
 
-5. Initialize back end files by Python (only run this once before each annotation task, e.g., annotating chunk #1 for factual areas):
-- Image file IDs, chunk number, task type ("counterfactual" or "factual") variables can be edited in the `init_code.py` file.
+5. Initialize back end files by Python (only run this once before each annotation task):
 ```cmd
 $ python init_code.py
 ```
 
-6. Save your CNN model in './model/' folder
+6. Put your CNN model in './model/' folder
+- Currently only pytorch's `.pt` and `.pth` model file are supported.
 
 7. Start the Flask app in the terminal:
 ```cmd
@@ -36,7 +36,6 @@ $ python app.py
 - Then go to `http://127.0.0.1:5000/` in the browser.
 
 8. Specify the file name of your model in the text input
-- Currently only pytorch's `.pt` and `.pth` model file are supported.
 - If you leave the input blank, the application would load a default pretrained ResNet 18 model.
 
 9. Start labeling:
