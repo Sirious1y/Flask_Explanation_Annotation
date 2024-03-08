@@ -7,12 +7,21 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-<title>{{ title }} ({{ task_title }})</title>
+<title>{{ title }}</title>
 {% endblock %} {% block body %}
+<div class="top-container"></div>
 
 {% for message in get_flashed_messages() %}
 <h2>{{ message }}</h2>
 {% endfor %}
+
+<div class="text-container" id="top-output">
+  <div class="task-msg-div" style="">
+    <div class="task-big">Factual Labeling</div>
+    <text>Please enter the file name of your CNN model.<br>
+    If you leave blank, a default pretrained ResNet18 model will be loaded for you. </text>
+  </div>
+</div>
 
 
 <div class="text-container" id="user_input">
@@ -24,5 +33,45 @@
         <input type="submit" value="Load">
     </form>
 </div>
+
+<style>
+  #hidden-canvas-container {
+    display: none;
+  }
+
+  body {
+    -moz-user-select:none;
+    -webkit-user-select:none;
+  }
+
+  #verify-code {
+    -moz-user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .top-msg-div {
+    margin-left: 409px;
+    margin-bottom: -12px;
+  }
+
+  .top-msg-div img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .task-msg-div {
+    margin-bottom: 20px;
+  }
+
+  .task-msg-div text {
+    font-size: 12pt;
+  }
+
+  .task-big {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+</style>
 
 {% endblock %}
