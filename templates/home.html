@@ -11,28 +11,44 @@
 {% endblock %} {% block body %}
 <div class="top-container"></div>
 
-{% for message in get_flashed_messages() %}
-<h2>{{ message }}</h2>
-{% endfor %}
-
 <div class="text-container" id="top-output">
   <div class="task-msg-div" style="">
     <div class="task-big">Factual Labeling</div>
-    <text>Please enter the file name of your CNN model.<br>
-    If you leave blank, a default pretrained ResNet18 model will be loaded for you. </text>
+    <text>Please select the models for your task.<br>
+    The default option is a pretrained ResNet18 model. <br>
+    If you don't see your model here, please make sure it is in the <i>model</i> folder, <br>
+    and the file name is ended with <i>'.pt'</i> or <i>'.pth'</i></text>
   </div>
 </div>
 
 
 <div class="text-container" id="user_input">
     <form action="index" method="post">
-        <label for="model_name">File name of the saved model</label>
+        <label for="model_name">Choose your Visual Prompted Model </label>
         <br>
-        <input type="text" name="model_name" value="">
+        <select name="model_name">
+            <option value=""> Select your model </option>
+            {% for file in models %}
+            <option value="{{ file }}"> {{ file }} </option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="model_name">Choose your Non-Visual Prompted Model </label>
         <br>
+        <select name="model_name_non_visual">
+            <option value=""> Select your model </option>
+            {% for file in models %}
+            <option value="{{ file }}"> {{ file }} </option>
+            {% endfor %}
+        </select>
+        <br><br>
         <input type="submit" value="Load">
     </form>
 </div>
+
+{% for message in get_flashed_messages() %}
+<h3 style="color:red">{{ message }}</h3>
+{% endfor %}
 
 <style>
   #hidden-canvas-container {

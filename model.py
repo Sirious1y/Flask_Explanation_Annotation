@@ -103,15 +103,23 @@ def save_image(image, mask, path):
     image.save(path)
 
 
+def get_result(model_output):
+    return torch.argmax(model_output, dim=0).item()
+
 if __name__ == '__main__':
-    img = load_image('./static/images/img_gender/demo_img_1.jpg')
+    # img = load_image('./static/images/img_gender/demo_img_1.jpg')
+    #
+    # ra = np.random.random((3, 3))
+    # mask = np.random.randint(2, size=(3, 3))
+    #
+    # print(mask)
+    # print(ra)
+    # mask = mask.astype(bool)
+    # ra[~mask] = 0
+    #
+    # print(ra)
 
-    ra = np.random.random((3, 3))
-    mask = np.random.randint(2, size=(3, 3))
-
-    print(mask)
-    print(ra)
-    mask = mask.astype(bool)
-    ra[~mask] = 0
-
-    print(ra)
+    resnet18 = models.resnet18(pretrained=True)
+    num_ftrs = resnet18.fc.in_features
+    resnet18.fc = torch.nn.Linear(num_ftrs, 2)
+    torch.save(resnet18, './model/model1.pt')

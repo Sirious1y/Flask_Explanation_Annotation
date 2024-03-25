@@ -10,8 +10,12 @@
 <title>{{ title }} ({{ task_title }})</title>
 {% endblock %} {% block body %}
 
-<div class="text-container" id="output">
-    <h2>Prediction result: {{ result }}</h2>
+<div class="text-container" id="output_visual">
+    <h2>Visual Prompted Model Prediction result: {{ result[0] }}</h2>
+</div>
+
+<div class="text-container" id="output_non_visual">
+    <h2>Non-Visual Prompted Model Prediction result: {{ result[1] }}</h2>
 </div>
 
 <div class="img-0-container" style="{{ draw_display }}">
@@ -24,6 +28,15 @@
   <div id="anno-0">
     <img class="img" src="{{ anno_path }}" alt="anno_0" />
   </div>
+</div>
+
+<div class="text-container" id="user_input">
+    <form action="index" method="post">
+        <br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <label for="next_btn">Move on to the next image... </label>
+        <br>
+        <input type="submit" value="Next">
+    </form>
 </div>
 
 <style>
