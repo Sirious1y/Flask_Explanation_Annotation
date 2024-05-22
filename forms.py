@@ -1,3 +1,4 @@
+# This script is likely useless and should be deleted
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, RadioField 
 

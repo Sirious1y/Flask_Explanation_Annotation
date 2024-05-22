@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from forms import ReasonForm
+from flask_wtf import FlaskForm
 import os
 import pandas as pd
 import json
@@ -79,7 +79,8 @@ def index():
                 flash('Model does not exist. Please double check the name you entered. ')
                 return redirect(url_for('home'))
 
-        form = ReasonForm()
+        form = FlaskForm()
+        print(f'hidden tags: {form.hidden_tag()}')
         result_path = f'output/{csvname_res}'
         # try:
         if True:
@@ -104,9 +105,9 @@ def index():
 
             session['img_path'] = img_paths
 
-            print(current_order)
-            print(current_idx)
-            print(idx_list)
+            # print(current_order)
+            # print(current_idx)
+            # print(idx_list)
             if current_order + 1 < len(idx_list):
                 current_order += 1
                 current_idx = idx_list[current_order].split('.jpg')[0]
@@ -116,75 +117,12 @@ def index():
                                    'current_idx': [current_idx]})
                 df.to_csv(f'output/{csvname_curr}', index=False)
 
-            # if form.validate_on_submit():
-            #     svg_path_input = request.form['crop_input']  # PNG-base64 string
-            #     map_all = pil2bin_matrix(svg_path_input)
-            #
-            #     try:
-            #         map_all = (cv2.resize(np.float32(map_all), matrix_resize_w_h) > 0) * 1  # (width, height)
-            #         results.append(json.dumps(map_all.tolist()))  # narray/list to string
-            #         results.append("good")
-            #         results.append(str(matrix_resize_w_h))
-            #
-            #     except:
-            #         results.append(map_all)  # skipped
-            #         results.append(svg_path_input)  # skipped
-            #         results.append(str(matrix_resize_w_h))
-            #
-            #     df_results.loc[current_order, :len(results)+1] = [current_idx] + results
-            #     print(f'map_all: {map_all}')
-            #
-            #     if current_order + 1 < len(idx_list):
-            #         current_order += 1
-            #         current_idx = idx_list[current_order].split('.jpg')[0]
-            #         print(current_idx)
-            #
-            #     else:
-            #         finish_text = f"Thank You! Your verification code is: {verify_code} (only appears once)"
-            #         form_display = False
-            #         os.remove(result_path)
-            #         timestr = datetime.now(tz).strftime("%Y%m%d_%H%M%S_%f")[:-4]
-            #         result_path = f"output/done/results_{folder_name}_{chunk_id}_{task_type}_{timestr}.csv"
-            #         pass
-            #
-            #     df_results.to_csv(result_path)
-            #
-            # else:
-            #     pass
-
-            #### Radio default selections
-
-            form.reason_input_1.data = 'True'
-            form.reason_input_2.data = 'True'
-            form.reason_input_3.data = 'True'
-            form.reason_input_4.data = 'True'
-            form.reason_input_5.data = 'True'
-            form.reason_input_6.data = 'True'
-            form.reason_input_7.data = 'True'
-            form.reason_input_8.data = 'True'
-            form.reason_input_9.data = '5'
-            form.reason_input_10.data = '5'
-            form.reason_input_11.data = '5'
-            form.reason_input_12.data = '5'
-
 
             df_current.loc[0, 'current_order'] = current_order
             df_current.loc[0, 'current_idx'] = idx_list[current_order]
 
             df_current.to_csv(f'output/{csvname_curr}')
 
-            q1_q2_display = False
-            q3_display = False
-
-            if q1_q2_display == False:
-                q1_q2_display = "display: none;"
-            else:
-                q1_q2_display = ""
-
-            if q3_display == False:
-                q3_display = "display: none;"
-            else:
-                q3_display = ""
 
             if form_display == False:
                 draw_display = "display: none;"
@@ -200,7 +138,7 @@ def index():
 
             task_title = folder_name.split("_")[1] + "_" + chunk_id + "_" + task_type
 
-            return render_template('index.html', title='Main', current_order=str(current_order+1), len_idx = len(idx_list), finish_text=finish_text, img_paths=img_paths, form=form, form_display=form_display, q1_q2_display=q1_q2_display, q3_display=q3_display, draw_display=draw_display, drawing_pad_size=drawing_pad_size, task_title=task_title, task_counter_display=task_counter_display, task_fact_display=task_fact_display)
+            return render_template('index.html', title='Main', current_order=str(current_order), len_idx = len(idx_list), finish_text=finish_text, img_paths=img_paths, form=form, form_display=form_display, draw_display=draw_display, drawing_pad_size=drawing_pad_size, task_title=task_title, task_counter_display=task_counter_display, task_fact_display=task_fact_display)
 
         # except:
         #     return render_template('blank.html', title='Blank')
