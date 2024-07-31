@@ -5,7 +5,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
-
+import cv2
 
 # Load the pretrained ResNet-50 model
 default_model = models.resnet50(pretrained=True)
@@ -28,12 +28,9 @@ class PromptRefinement:
 
     def convert_values(self, trinary_map):
         # Create a mask for -1 values based on probability p
-        mask_minus1 = np.random.random(trinary_map.shape) < self.p
-        trinary_map[mask_minus1 & (trinary_map == -1)] = 0
-
-        # Create a mask for 1 values based on probability 1-p
-        mask_1 = np.random.random(trinary_map.shape) < (1 - self.p)
-        trinary_map[mask_1 & (trinary_map == 1)] = 0
+        mask = np.random.random(trinary_map.shape) < self.p
+        trinary_map[mask & (trinary_map == -1)] = 1
+        trinary_map[~mask & (trinary_map == -1)] = 0
 
         return trinary_map
 
@@ -53,13 +50,41 @@ class PromptRefinement:
 
         for _ in range(self.num_iterations):
             trinary_map_modified = self.convert_values(trinary_map.copy())
+
+            # Downsample by a factor of 4
+            downsampled = cv2.resize(trinary_map_modified, (56, 56), interpolation=cv2.INTER_AREA)
+
+            # Apply a threshold
+            _, thresholded = cv2.threshold(downsampled, 0.5, 1, cv2.THRESH_BINARY)
+
+            # Upsample back to original size
+            trinary_map_modified = cv2.resize(thresholded, (224, 224), interpolation=cv2.INTER_NEAREST)
+
             trinary_map_tensor = torch.tensor(trinary_map_modified, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+
             if isinstance(image, np.ndarray):
                 image_tensor = torch.tensor(image, dtype=torch.float32)
             else:
                 image_tensor = image
 
+            print(image_tensor.shape)
+            print(trinary_map_tensor.shape)
             masked_image = image_tensor * trinary_map_tensor
+
+            # to_pil = transforms.ToPILImage()
+            # pil_image = to_pil(masked_image)
+            #
+            # plt.imshow(pil_image)
+            # plt.title('Input')
+            # plt.savefig("input.png")
+            # plt.close()
+            # ori = Image.open("input.png")
+            # ori.show()
+
+            transform = transforms.Compose([
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ])
+            # masked_image = transform(masked_image)
 
             with torch.no_grad():
                 output = self.model(masked_image)
@@ -71,6 +96,14 @@ class PromptRefinement:
         ms = np.array(ms)
         scores = np.array(scores)
         A = np.sum(ms * scores[:, None, None], axis=0) / (self.num_iterations * self.p)
+
+        min_val = np.min(A)
+        max_val = np.max(A)
+        print('Normalized')
+        A = (A - min_val) / (max_val - min_val)
+
+        A = (A >= 0.2).astype(int)
+
         return A
 
 
