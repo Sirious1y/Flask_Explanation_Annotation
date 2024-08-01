@@ -4,7 +4,9 @@ import json
 from PIL import Image
 import numpy as np
 import torch
+import torch.nn as nn
 import torchvision.transforms as transforms
+import torchvision.models as models
 import matplotlib.pyplot as plt
 from utils import process_user_drawing
 from refinement import PromptRefinement
@@ -13,8 +15,11 @@ from refinement import PromptRefinement
 models_folder = 'models'
 
 # Dictionary mapping models to their predefined labels
+default_labels = np.loadtxt('synset_words.txt', str, delimiter='\t')
+default_labels = [label.split(' ', 1)[1].split(',')[0] for label in default_labels]
+print(default_labels)
 model_labels = {
-    "default.pt": ["Male", "Female"],
+    "default.pt": default_labels,
     "resnet50.pt": ["Male", "Female"],
     "vgg16.pt": ["labelA", "labelB"]
     # Add more models and their labels as needed
@@ -39,80 +44,76 @@ def update_labels(model_choice):
     return ", ".join(labels)
 
 def update_image_editor(image):
-    print('Image Received')
     return {
         image_editor_important: image,
         image_editor_unimportant: image
     }
 
 def classify_image(image_editor_important, image_editor_unimportant, model_name):
+
+    # Extract images from both editors
     original_image = np.array(image_editor_important['background'])
     important_drawing = np.array(image_editor_important['layers'][0]) if image_editor_important['layers'] else None
     unimportant_drawing = np.array(image_editor_unimportant['layers'][0]) if image_editor_unimportant['layers'] else None
 
-    label_texts = model_labels.get(model_name, [])
+    # Preprocess the original image for prediction
+    original_image = Image.fromarray(original_image).convert("RGB")
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225]),
+        lambda x: torch.unsqueeze(x, 0)
+    ])
+    image_tensor = transform(original_image)
 
+    # Process the user's drawings to fill in the circled areas
     if important_drawing is not None:
         important_drawing = Image.fromarray(important_drawing).convert("RGB")
-    if unimportant_drawing is not None:
-        unimportant_drawing = Image.fromarray(unimportant_drawing).convert("RGB")
-
-    image_tensor = torch.tensor(original_image, dtype=torch.float32)
-    image_tensor = image_tensor.permute(2, 0, 1).unsqueeze(0)
-    original_image = Image.fromarray(original_image).convert("RGB")
-    if important_drawing is not None:
         important_drawing = process_user_drawing(important_drawing)
     if unimportant_drawing is not None:
+        unimportant_drawing = Image.fromarray(unimportant_drawing).convert("RGB")
         unimportant_drawing = process_user_drawing(unimportant_drawing)
 
+    # Initialize a mask with -1 (other areas)
     combined_mask = np.full(important_drawing.shape, -1)
     if important_drawing is not None:
         combined_mask[important_drawing > 0] = 1
     if unimportant_drawing is not None:
         combined_mask[unimportant_drawing > 0] = 0
 
-    prompt_refiner = PromptRefinement(num_iterations=100)
-    refined_mask = prompt_refiner.refine_prompt(image_tensor, combined_mask, target_class=1)
+    # Load the entire model
+    model = load_model(model_name)
 
-    # plt.imshow(refined_mask, cmap='gray')
-    # plt.title('Refined')
-    # plt.savefig("refined_drawing.png")
-    # plt.close()
-    # processed_drawing = Image.open("refined_drawing.png")
-    # processed_drawing.show()
+    # Initialize the prompt refinement class
+    prompt_refiner = PromptRefinement(model=model, num_iterations=100)
+    refined_mask = prompt_refiner.refine_prompt(image_tensor, important_drawing, unimportant_drawing)
+    # Display the processed drawing
+    plt.imshow(refined_mask, cmap='gray')
+    plt.title('Refined')
+    plt.savefig("refined_drawing.png")
+    plt.close()
+    processed_drawing = Image.open("refined_drawing.png")
+    processed_drawing.show()
 
-    combined_mask_3d = np.repeat(combined_mask[:, :, np.newaxis], 3, axis=2)
+    # Apply the combined mask to the original image
+    combined_mask_3d = np.repeat(refined_mask[:, :, np.newaxis], 3, axis=2)
     masked_image = np.multiply(original_image, combined_mask_3d)
     masked_image_pil = Image.fromarray(masked_image.astype(np.uint8))
 
-    # masked_image[masked_image > 0] = 255
-    # masked_image_array = np.abs(masked_image)
-    # plt.figure(figsize=(6, 6))
-    # plt.imshow(masked_image_array)
-    # plt.title("Masked Image")
-    # plt.axis('off')
-    # plt.savefig("processed_drawing.png")
-    # plt.close()
-    # processed_drawing = Image.open("processed_drawing.png")
-    # processed_drawing.show()
+    # original_image_tensor = transform(original_image).unsqueeze(0)
+    masked_image_tensor = transform(masked_image_pil)
 
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-    original_image_tensor = transform(original_image).unsqueeze(0)
-    masked_image_tensor = transform(masked_image_pil).unsqueeze(0)
+    model = model.to(torch.device('cpu'))
 
-    model = load_model(model_name)
     with torch.no_grad():
-        outputs_original = model(original_image_tensor)
+        outputs_original = model(image_tensor)
         outputs_masked = model(masked_image_tensor)
 
     predicted_label_original = outputs_original.argmax(dim=1).item()
     predicted_label_masked = outputs_masked.argmax(dim=1).item()
 
+    label_texts = model_labels.get(model_name, [])
     label_text_original = label_texts[predicted_label_original] if label_texts else f"Label {predicted_label_original}"
     label_text_masked = label_texts[predicted_label_masked] if label_texts else f"Label {predicted_label_masked}"
 
@@ -153,7 +154,7 @@ with gr.Blocks() as demo:
         with gr.Tab("Step 5: Classification Result"):
             with gr.Column():
                 output_text = gr.Textbox(label="Predicted Labels")
-                # classify_button = gr.Button("Classify Image")
+                classify_button = gr.Button("Classify Image")
 
         next_button1.click(None, [], [], js="() => {document.querySelectorAll('button')[1].click()}")
 
@@ -178,16 +179,16 @@ with gr.Blocks() as demo:
         )
 
         next_button4.click(
-            classify_image,
-            inputs=[image_editor_important, image_editor_unimportant, model_input],
-            outputs=[output_text],
+            None,
+            inputs=[],
+            outputs=[],
             js="() => {document.querySelectorAll('button')[4].click()}"
         )
 
-        # classify_button.click(
-        #     classify_image,
-        #     inputs=[image_editor_important, image_editor_unimportant, model_input],
-        #     outputs=[output_text]
-        # )
+        classify_button.click(
+            classify_image,
+            inputs=[image_editor_important, image_editor_unimportant, model_input],
+            outputs=[output_text]
+        )
 
 demo.launch()
