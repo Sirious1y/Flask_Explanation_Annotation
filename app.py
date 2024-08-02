@@ -44,6 +44,11 @@ def update_labels(model_choice):
     return ", ".join(labels)
 
 def update_image_editor(image):
+    original_image = Image.fromarray(image).convert("RGB")
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+    ])
+    image = transform(original_image)
     return {
         image_editor_important: image,
         image_editor_unimportant: image
@@ -88,18 +93,26 @@ def classify_image(image_editor_important, image_editor_unimportant, model_name)
     # Initialize the prompt refinement class
     prompt_refiner = PromptRefinement(model=model, num_iterations=100)
     refined_mask = prompt_refiner.refine_prompt(image_tensor, important_drawing, unimportant_drawing)
-    # Display the processed drawing
-    plt.imshow(refined_mask, cmap='gray')
-    plt.title('Refined')
-    plt.savefig("refined_drawing.png")
-    plt.close()
-    processed_drawing = Image.open("refined_drawing.png")
-    processed_drawing.show()
+    # # Display the processed drawing
+    # plt.imshow(refined_mask, cmap='gray')
+    # plt.title('Refined')
+    # plt.savefig("refined_drawing.png")
+    # plt.close()
+    # processed_drawing = Image.open("refined_drawing.png")
+    # processed_drawing.show()
 
     # Apply the combined mask to the original image
     combined_mask_3d = np.repeat(refined_mask[:, :, np.newaxis], 3, axis=2)
     masked_image = np.multiply(original_image, combined_mask_3d)
     masked_image_pil = Image.fromarray(masked_image.astype(np.uint8))
+
+    # Display the processed drawing
+    plt.imshow(masked_image)
+    plt.title('Masked')
+    plt.savefig("masked.png")
+    plt.close()
+    masked = Image.open("masked.png")
+    masked.show()
 
     # original_image_tensor = transform(original_image).unsqueeze(0)
     masked_image_tensor = transform(masked_image_pil)
