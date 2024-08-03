@@ -36,7 +36,7 @@ class RISE(nn.Module):
 
         self.masks = self.masks.reshape(-1, 1, *self.input_size)  # torch.Size([6000, 1, 224, 224])
 
-        np.save(savepath, self.masks)
+        # np.save(savepath, self.masks)
         self.masks = torch.from_numpy(self.masks).float()
         # self.masks = self.masks.cuda()
         self.N = N
