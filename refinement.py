@@ -56,11 +56,11 @@ class PromptRefinement:
         model = self.model
         model = nn.Sequential(model, nn.Softmax(dim=1))
         model.eval()
-        model = model.cuda()
+        # model = model.cuda()
         for p in model.parameters():
             p.requires_grad = False
         # To use multiple GPUs
-        model = nn.DataParallel(model)
+        # model = nn.DataParallel(model)
 
         if binary_map_include is not None:
             binary_map_include = np.ones(args.input_size, dtype=np.float32)
@@ -71,12 +71,14 @@ class PromptRefinement:
 
         # Generate masks for RISE.
         maskspath = 'masks.npy'
-        explainer.generate_masks(N=6000, s=8, p1=0.1,
+        explainer.generate_masks(N=600, s=8, p1=0.1,
                                  binary_map_include=binary_map_include,
                                  binary_map_exclude=binary_map_exclude,
                                  savepath=maskspath)
-        saliency = explainer(img.cuda()).cpu().numpy()
-        p, c = torch.topk(model(img.cuda()), k=1)
+        # saliency = explainer(img.cuda()).cpu().numpy()
+        saliency = explainer(img).cpu().numpy()
+        # p, c = torch.topk(model(img.cuda()), k=1)
+        p, c = torch.topk(model(img), k=1)
         p, c = p[0], c[0]
         sal = saliency[c[0]]
 

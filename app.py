@@ -107,17 +107,17 @@ def classify_image(image_editor_important, image_editor_unimportant, model_name)
     masked_image_pil = Image.fromarray(masked_image.astype(np.uint8))
 
     # Display the processed drawing
-    plt.imshow(masked_image)
-    plt.title('Masked')
-    plt.savefig("masked.png")
-    plt.close()
-    masked = Image.open("masked.png")
-    masked.show()
+    # plt.imshow(masked_image)
+    # plt.title('Masked')
+    # plt.savefig("masked.png")
+    # plt.close()
+    # masked = Image.open("masked.png")
+    # masked.show()
 
     # original_image_tensor = transform(original_image).unsqueeze(0)
     masked_image_tensor = transform(masked_image_pil)
 
-    model = model.to(torch.device('cpu'))
+    # model = model.to(torch.device('cpu'))
 
     with torch.no_grad():
         outputs_original = model(image_tensor)
