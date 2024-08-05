@@ -134,7 +134,7 @@ def classify_image(image_editor_important, image_editor_unimportant, model_name)
 
 available_models = list_models(models_folder)
 
-with gr.Blocks() as demo:
+with gr.Blocks(title="Visual Prompted Prediction") as demo:
     uploaded_image = gr.State()
     with gr.Tabs():
         with gr.Tab("Step 1: Choose Model"):
