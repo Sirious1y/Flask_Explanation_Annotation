@@ -54,6 +54,14 @@ def update_image_editor(image):
         image_editor_unimportant: image
     }
 
+def refresh_image_editor(image):
+    original_image = Image.fromarray(image).convert("RGB")
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+    ])
+    image = transform(original_image)
+    return image
+
 def classify_image(image_editor_important, image_editor_unimportant, model_name):
 
     # Extract images from both editors
@@ -130,7 +138,7 @@ def classify_image(image_editor_important, image_editor_unimportant, model_name)
     label_text_original = label_texts[predicted_label_original] if label_texts else f"Label {predicted_label_original}"
     label_text_masked = label_texts[predicted_label_masked] if label_texts else f"Label {predicted_label_masked}"
 
-    return f"Original Image Prediction: {label_text_original}\nPrompted Image Prediction: {label_text_masked}"
+    return f"Original Image Prediction: {label_text_original}\nPrompted Image Prediction: {label_text_masked}", masked_image
 
 available_models = list_models(models_folder)
 
@@ -177,6 +185,7 @@ with gr.Blocks(title="Visual Prompted Prediction") as demo:
                 gr.Markdown("## Step 5: Classification Result")
                 gr.Markdown("View the classification results based on your inputs and highlighted areas.")
                 output_text = gr.Textbox(label="Predicted Labels")
+                masked_image_display = gr.Image(label="Masked Image", image_mode='RGB', height=256, width=256)
                 classify_button = gr.Button("Classify Image")
 
         next_button1.click(None, [], [], js="() => {document.querySelectorAll('button')[1].click()}")
@@ -185,6 +194,18 @@ with gr.Blocks(title="Visual Prompted Prediction") as demo:
             update_image_editor,
             inputs=image_input,
             outputs=[image_editor_important, image_editor_unimportant]
+        )
+
+        image_editor_important.clear(
+            refresh_image_editor,
+            inputs=image_input,
+            outputs=[image_editor_important]
+        )
+
+        image_editor_unimportant.clear(
+            refresh_image_editor,
+            inputs=image_input,
+            outputs=[image_editor_unimportant]
         )
 
         next_button2.click(
@@ -211,7 +232,7 @@ with gr.Blocks(title="Visual Prompted Prediction") as demo:
         classify_button.click(
             classify_image,
             inputs=[image_editor_important, image_editor_unimportant, model_input],
-            outputs=[output_text]
+            outputs=[output_text, masked_image_display]
         )
 
 demo.launch()

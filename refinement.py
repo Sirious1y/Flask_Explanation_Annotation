@@ -71,7 +71,7 @@ class PromptRefinement:
 
         # Generate masks for RISE.
         maskspath = 'masks.npy'
-        explainer.generate_masks(N=600, s=8, p1=0.1,
+        explainer.generate_masks(N=self.num_iterations, s=8, p1=0.1,
                                  binary_map_include=binary_map_include,
                                  binary_map_exclude=binary_map_exclude,
                                  savepath=maskspath)
