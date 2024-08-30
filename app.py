@@ -19,8 +19,7 @@ default_labels = np.loadtxt('synset_words.txt', str, delimiter='\t')
 default_labels = [label.split(' ', 1)[1].split(',')[0] for label in default_labels]
 # print(default_labels)
 model_labels = {
-    "default.pt": default_labels,
-    "resnet50.pt": ["Male", "Female"],
+    "resnet50.pt": default_labels,
     "vgg16.pt": ["labelA", "labelB"]
     # Add more models and their labels as needed
 }
