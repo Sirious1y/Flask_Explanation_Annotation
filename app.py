@@ -98,7 +98,7 @@ def classify_image(image_editor_important, image_editor_unimportant, model_name)
     model = load_model(model_name)
 
     # Initialize the prompt refinement class
-    prompt_refiner = PromptRefinement(model=model, num_iterations=300)
+    prompt_refiner = PromptRefinement(model=model, num_iterations=50)
     refined_mask = prompt_refiner.refine_prompt(image_tensor, important_drawing, unimportant_drawing)
     # # Display the processed drawing
     # plt.imshow(refined_mask, cmap='gray')
