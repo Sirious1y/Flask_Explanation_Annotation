@@ -1,0 +1,64 @@
+body {
+  --color-bg: #0e1118;
+  --color-neutral-100: #1c2025;
+  --color-neutral-200: #1e2530;
+  --color-neutral-300: #313947;
+  --color-neutral-400: #9299a5;
+  --color-red: #ca4646;
+}
+
+.gradio-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+
+  .tabs {
+    display: flex;
+
+    .tab-nav {
+      display: flex;
+      flex-direction: column;
+      width: 24vw;
+      height: 100vh;
+      background-color: var(--color-neutral-100);
+      padding: 40px;
+
+      ::before {
+        background-color: white;
+        color: var(--color-bg);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      button {
+        padding: 0;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: left;
+        display: flex;
+        gap: 16px;
+        height: 100px;
+
+        &.selected {
+          border: none;
+          background-color: transparent;
+        }
+      }
+    }
+
+    .tabitem {
+      width: 76vw;
+      right: 0;
+      padding: 40px;
+      margin: 0;
+      border: none;
+    }
+  }
+}
