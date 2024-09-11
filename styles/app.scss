@@ -48,13 +48,15 @@ body {
 
     .tabitem {
       width: 76vw;
+      height: 100vh;
       right: 0;
       padding: 40px;
       margin: 0;
       border: none;
+      overflow: scroll;
 
       h2 {
-        margin-top: 40px;
+        margin-top: 20px;
       }
 
       .form {
@@ -68,6 +70,21 @@ body {
           .svelte-1gfkn6j {
             display: none;
           }
+        }
+      }
+
+      .svelte-cmf5ev { // Submit button
+        background: transparent !important;
+        background-image: none !important;
+        background-color: white !important;
+        color: var(--color-bg) !important;
+        margin-left: auto;
+        margin-top: 20px;
+        width: fit-content;
+        transition: all 0.2s;
+
+        &:hover {
+          opacity: 0.7;
         }
       }
     }
