@@ -144,12 +144,13 @@ available_models = list_models(models_folder)
 with gr.Blocks(title="Visual Prompted Prediction", css="./styles/app.scss") as demo:
     uploaded_image = gr.State()
     with gr.Tabs():
-        with gr.Tab("Select Model", elem_id="step-1"):
+        with gr.Tab("1.\tSelect Model", elem_id="step-1"):
             with gr.Column():
-                gr.Markdown("## Step 1: Choose a Model")
+                gr.Markdown("## Select Model")
                 gr.Markdown("Select a model from the list. The predefined labels for the chosen model will be displayed.")
-                model_input = gr.Radio(choices=list(available_models), label="Choose Model")
-                labels_output = gr.Textbox(label="Predefined Labels", interactive=False)
+                model_input = gr.Dropdown(choices=list(available_models), label="", value=available_models[0])
+                gr.Markdown("## Predefined Labels")
+                labels_output = gr.Textbox(label="", interactive=False)
                 next_button1 = gr.Button("Next: Upload Image")
 
                 model_input.change(
@@ -158,14 +159,14 @@ with gr.Blocks(title="Visual Prompted Prediction", css="./styles/app.scss") as d
                     outputs=[labels_output]
                 )
 
-        with gr.Tab("Upload Image", elem_id="step-2"):
+        with gr.Tab("2.\tUpload Image", elem_id="step-2"):
             with gr.Column():
-                gr.Markdown("## Step 2: Upload Image")
+                gr.Markdown("## Upload Image")
                 gr.Markdown("Upload the image you want to analyze. This image will be used in the following steps for highlighting important and irrelevant areas.")
                 image_input = gr.Image(label="Upload Image", image_mode='RGB')
                 next_button2 = gr.Button("Next: Highlight Important Areas")
 
-        with gr.Tab("Annotate Image", elem_id="step-3"):
+        with gr.Tab("3.\tAnnotate Image", elem_id="step-3"):
             with gr.Column():
                 gr.Markdown("## Step 3: Highlight Important Areas")
                 gr.Markdown("Highlight the important areas in the uploaded image by drawing on it. These areas will be considered crucial for the decision making process.")
@@ -185,7 +186,7 @@ with gr.Blocks(title="Visual Prompted Prediction", css="./styles/app.scss") as d
         #         image_editor_unimportant = gr.ImageEditor(label="Highlight Unimportant Areas", image_mode='RGB')
         #         next_button4 = gr.Button("Next: Classify Image")
 
-        with gr.Tab("Classification Result", elem_id="step-4"):
+        with gr.Tab("4.\tClassification Result", elem_id="step-4"):
             with gr.Column():
                 gr.Markdown("## Step 5: Classification Result")
                 gr.Markdown("View the classification results based on your inputs and highlighted areas.")
