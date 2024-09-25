@@ -3,9 +3,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from torch.utils.data.sampler import Sampler
-from torchvision import transforms, datasets
+from torchvision import transforms
 from PIL import Image
 
+is_front = False
+
+# Path to the models folder
+models_folder = 'models'
+
+def get_labels(): 
+    # Dictionary mapping models to their predefined labels
+    default_labels = np.loadtxt('synset_words.txt', str, delimiter='\t')
+    default_labels = [label.split(' ', 1)[1].split(',')[0] for label in default_labels]
+    # print(default_labels)
+    model_labels = {
+        "resnet50.pt": default_labels,
+        "vgg16.pt": ["labelA", "labelB"]
+        # Add more models and their labels as needed
+    }
+
+    return model_labels
 
 # Function to process the user's drawing to fill in the circled areas
 def process_user_drawing(user_drawing):
@@ -16,11 +33,9 @@ def process_user_drawing(user_drawing):
     cv2.drawContours(user_drawing_gray, contours, -1, (255), thickness=cv2.FILLED)  # Fill the contours
     return user_drawing_gray
 
-
 # Dummy class to store arguments
 class Dummy():
     pass
-
 
 # Function that opens image from disk, normalizes it and converts to tensor
 read_tensor = transforms.Compose([
@@ -31,7 +46,6 @@ read_tensor = transforms.Compose([
                          std=[0.229, 0.224, 0.225]),
     lambda x: torch.unsqueeze(x, 0)
 ])
-
 
 # Plots image from tensor
 def tensor_imshow(inp, title=None, **kwargs):
