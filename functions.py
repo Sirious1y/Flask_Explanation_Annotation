@@ -1,27 +1,14 @@
-import os
+import requests
 import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from PIL import Image
-from utils import models_folder, get_labels, process_user_drawing
+from utils import get_labels, process_user_drawing, list_models, load_model
 from refinement import PromptRefinement
-from utils import is_front
+from config import models_folder, is_front, API_URL
 
 model_labels = get_labels()
-
-# Function to list available models
-def list_models(models_folder):
-    return [f for f in os.listdir(models_folder) if os.path.isfile(os.path.join(models_folder, f))]
-
-# Function to load the model based on the selected model name
-def load_model(model_name):
-    model_path = os.path.join(models_folder, model_name)
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file '{model_name}' not found in the 'models' folder.")
-    model = torch.load(model_path)
-    model.eval()
-    return model
 
 def update_labels(model_choice):
     """Fetch and display predefined labels for the chosen model."""
@@ -45,16 +32,31 @@ def refresh_image_editor(image):
     return image
 
 def classify_image(image_editor_important, image_editor_unimportant, model_name):
-    if is_front: 
-        print("running in the front end")
-        return "Sending request to back end. ", None
-    else: 
-        print("running in back end")
-
     # Extract images from both editors
     original_image = np.array(image_editor_important['background'])
     important_drawing = np.array(image_editor_important['layers'][0]) if image_editor_important['layers'] else None
     unimportant_drawing = np.array(image_editor_unimportant['layers'][0]) if image_editor_unimportant['layers'] else None
+
+    if is_front: 
+        print("running in the front end")
+        input_data = {
+            'original': original_image.tolist(), 
+            'important': important_drawing.tolist(), 
+            'unimportant': unimportant_drawing.tolist(), 
+            'model_name': model_name
+        }
+        response = requests.post(API_URL, json=input_data)
+        if response.status_code == 200:
+            prediction = response.json().get('result')
+            masked_image = response.json().get('masked')
+            masked_image = np.array(masked_image, dtype=np.uint8)
+            print(f"Predicted label: {prediction}")
+            return prediction, masked_image
+        else:
+            print(f"Failed to get prediction. Status code: {response.status_code}")
+            return f"Status code: {response.status_code}", None
+    else: 
+        print("running in back end")
 
     # Preprocess the original image for prediction
     original_image = Image.fromarray(original_image).convert("RGB")

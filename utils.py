@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,11 +6,7 @@ import torch
 from torch.utils.data.sampler import Sampler
 from torchvision import transforms
 from PIL import Image
-
-is_front = False
-
-# Path to the models folder
-models_folder = 'models'
+from config import models_folder
 
 def get_labels(): 
     # Dictionary mapping models to their predefined labels
@@ -23,6 +20,19 @@ def get_labels():
     }
 
     return model_labels
+
+# Function to list available models
+def list_models(models_folder):
+    return [f for f in os.listdir(models_folder) if os.path.isfile(os.path.join(models_folder, f))]
+
+# Function to load the model based on the selected model name
+def load_model(model_name):
+    model_path = os.path.join(models_folder, model_name)
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file '{model_name}' not found in the 'models' folder.")
+    model = torch.load(model_path)
+    model.eval()
+    return model
 
 # Function to process the user's drawing to fill in the circled areas
 def process_user_drawing(user_drawing):

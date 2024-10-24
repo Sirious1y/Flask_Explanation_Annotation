@@ -1,7 +1,8 @@
 import gradio as gr
 import numpy as np
-from functions import list_models, update_labels, update_image_editor, refresh_image_editor, classify_image
-from utils import models_folder
+from functions import update_labels, update_image_editor, refresh_image_editor, classify_image
+from utils import list_models
+from config import models_folder
 
 is_front = True
 available_models = list_models(models_folder)
